@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sh-library/base/type_alias.hpp"
+#include "type_alias.hpp"
 
 #pragma GCC target("avx2")
 #pragma GCC optimize("O3")
