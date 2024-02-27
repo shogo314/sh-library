@@ -44,7 +44,6 @@ struct infint {
         if (_v == _NaN) return _v;
         return -_v;
     }
-
     constexpr T& operator*=(const infint& o) noexcept {
         if (isNaN() or o.isNaN()) {
             _v = _NaN;
@@ -64,7 +63,7 @@ struct infint {
             _v = 0;
             return *this;
         }
-        if (std::abs(_v) > _PlusInf / std::abs(o._v)) {
+        if (std::abs(_v) >= _PlusInf / std::abs(o._v)) {
             if ((_v > 0) ^ (o._v > 0)) {
                 _v = _MinusInf;
             } else {
@@ -73,6 +72,103 @@ struct infint {
             return *this;
         }
         _v *= o._v;
+        return *this;
+    }
+    constexpr T& operator/=(const infint& o) noexcept {
+        if (isNaN() or o.isNaN()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not isfinite() and not o.isfinite()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (o._v == 0) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not o.isfinite()) {
+            _v = 0;
+            return *this;
+        }
+        _v /= o._v;
+        return *this;
+    }
+    constexpr T& operator%=(const infint& o) noexcept {
+        if (isNaN() or o.isNaN()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not isfinite() and not o.isfinite()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (o._v == 0) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not o.isfinite()) {
+            return *this;
+        }
+        _v %= o._v;
+        return *this;
+    }
+    constexpr T& operator+=(const infint& o) noexcept {
+        if (isNaN() or o.isNaN()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not isfinite() or not o.isfinite()) {
+            if (not isfinite() and not o.isfinite()) {
+                if (isPlusInf() ^ o.isPlusInf()) {
+                    _v = _NaN;
+                }
+            } else if (o.isfinite()) {
+                _v = o._v;
+            }
+            return *this;
+        }
+        if (o._v > 0) {
+            if (_v >= _PlusInf - o._v) {
+                _v = _PlusInf;
+                return *this;
+            }
+        } else if (o._v < 0) {
+            if (_v <= _MinusInf - o._v) {
+                _v = _MinusInf;
+                return *this;
+            }
+        }
+        _v += o._v;
+        return *this;
+    }
+    constexpr T& operator-=(const infint& o) noexcept {
+        if (isNaN() or o.isNaN()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not isfinite() or not o.isfinite()) {
+            if (not isfinite() and not o.isfinite()) {
+                if (isPlusInf() == o.isPlusInf()) {
+                    _v = _NaN;
+                }
+            } else if (o.isfinite()) {
+                _v = -o._v;
+            }
+            return *this;
+        }
+        if (o._v > 0) {
+            if (_v <= _MinusInf + o._v) {
+                _v = _MinusInf;
+                return *this;
+            }
+        } else if (o._v < 0) {
+            if (_v >= _PlusInf + o._v) {
+                _v = _PlusInf;
+                return *this;
+            }
+        }
+        _v -= o._v;
         return *this;
     }
 
