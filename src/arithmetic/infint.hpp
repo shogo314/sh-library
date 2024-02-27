@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <iostream>
 #include <limits>
 #include <type_traits>
@@ -35,8 +36,8 @@ struct infint {
     constexpr bool isInf() const noexcept { return _v == _PlusInf; }
     constexpr bool isfinite() const noexcept { return _MinusInf < _v and _v < _PlusInf; }
 
-    constexpr const T& operator=(const infint& o) noexcept { return _v = o._v; }
-    constexpr const T& operator=(const T& t) noexcept { return _v = t; }
+    constexpr T& operator=(const infint& o) noexcept { return _v = o._v; }
+    constexpr T& operator=(const T& t) noexcept { return _v = t; }
 
     constexpr T operator+() const noexcept { return _v; }
     constexpr T operator-() const noexcept {
@@ -44,7 +45,36 @@ struct infint {
         return -_v;
     }
 
-    
+    constexpr T& operator*=(const infint& o) noexcept {
+        if (isNaN() or o.isNaN()) {
+            _v = _NaN;
+            return *this;
+        }
+        if (not isfinite() or not o.isfinite()) {
+            if (_v == 0 or o._v == 0) {
+                _v = _NaN;
+            } else if ((_v > 0) ^ (o._v > 0)) {
+                _v = _MinusInf;
+            } else {
+                _v = _PlusInf;
+            }
+            return *this;
+        }
+        if (_v == 0 or o._v == 0) {
+            _v = 0;
+            return *this;
+        }
+        if (std::abs(_v) > _PlusInf / std::abs(o._v)) {
+            if ((_v > 0) ^ (o._v > 0)) {
+                _v = _MinusInf;
+            } else {
+                _v = _PlusInf;
+            }
+            return *this;
+        }
+        _v *= o._v;
+        return *this;
+    }
 
     /**
      * 正の無限大
