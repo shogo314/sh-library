@@ -13,30 +13,6 @@ struct arithmetic_common_type<T, T> {
     using type = T;
 };
 template <>
-struct arithmetic_common_type<int, long long> {
-    using type = long long;
-};
-template <>
-struct arithmetic_common_type<long long, int> {
-    using type = long long;
-};
-template <>
-struct arithmetic_common_type<int, long> {
-    using type = long;
-};
-template <>
-struct arithmetic_common_type<long, int> {
-    using type = long;
-};
-template <>
-struct arithmetic_common_type<long, long long> {
-    using type = long long;
-};
-template <>
-struct arithmetic_common_type<long long, long> {
-    using type = long long;
-};
-template <>
 struct arithmetic_common_type<int, unsigned long long> {
     using type = long long;
 };
