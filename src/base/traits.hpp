@@ -58,12 +58,20 @@ template <class T, class = void>
 struct has_repr_impl : std::false_type {};
 template <class T>
 struct has_repr_impl<T, std::void_t<decltype(std::declval<T>().repr())>> : std::true_type {};
+template <class T, class = void>
+struct has_sum_impl : std::false_type {};
+template <class T>
+struct has_sum_impl<T, std::void_t<decltype(std::declval<T>().sum())>> : std::true_type {};
 }  // namespace detail
 
 template <class T>
 struct has_repr : detail::has_repr_impl<T>::type {};
 template <class T>
 inline constexpr bool has_repr_v = has_repr<T>::value;
+template <class T>
+struct has_sum : detail::has_sum_impl<T>::type {};
+template <class T>
+inline constexpr bool has_sum_v = has_sum<T>::value;
 
 namespace detail {
 struct is_addible_with_impl {
