@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <map>
 #include <set>
 #include <sstream>
@@ -182,6 +183,23 @@ inline std::string repr(const std::map<T1, T2>& t) {
     for (auto itr = t.begin(); itr != t.end(); itr++) {
         if (itr != t.begin()) ret << ", ";
         ret << "{" << repr(itr->first) << ", " << repr(itr->second) << "}";
+    }
+    ret << "}";
+    return ret.str();
+}
+
+template <typename T, size_t N>
+inline std::string type_str(const std::array<T, N>&) {
+    T t;
+    return "std::array<" + type_str(t) + ", " + std::to_string(N) + ">";
+}
+template <typename T, size_t N>
+inline std::string repr(const std::array<T, N>& t) {
+    std::ostringstream ret;
+    ret << type_str(t) << "{";
+    for (auto itr = t.begin(); itr != t.end(); itr++) {
+        if (itr != t.begin()) ret << ", ";
+        ret << repr(*itr);
     }
     ret << "}";
     return ret.str();
