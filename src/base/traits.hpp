@@ -2,8 +2,6 @@
 
 #include <type_traits>
 
-// template <typename T1, typename T2>
-// using arithmetic_type_t = std::make_signed_t<std::common_type_t<T1, T2>>;
 template <typename T1, typename T2>
 struct arithmetic_common_type {
     using type = std::common_type_t<T1, T2>;
@@ -55,22 +53,19 @@ struct arithmetic_common_type<unsigned long, long> {
 template <typename T1, typename T2>
 using arithmetic_common_type_t = typename arithmetic_common_type<T1, T2>::type;
 
-// template <class MemfunType>
-// struct _has_sum {
-//    private:
-//     static std::false_type confirm(...);
-//     template <class U>
-//     static auto confirm(U u) -> decltype(static_cast<MemfunType>(&U::sum), std::true_type());
+namespace detail {
+template <class T, class = void>
+struct has_repr_impl : std::false_type {};
+template <class T>
+struct has_repr_impl<T, std::void_t<decltype(std::declval<T>().repr())>> : std::true_type {};
+}  // namespace detail
 
-//    public:
-//     static constexpr bool value = decltype(confirm(std::declval<rinse::owner_t<MemfunType> >()))::value;
-// };
-// template <class MemfunType>
-// struct has_sum
-//     : rinse::meta_bool<_has_sum<MemfunType>::value> {};
+template <class T>
+struct has_repr : detail::has_repr_impl<T>::type {};
+template <class T>
+inline constexpr bool has_repr_v = has_repr<T>::value;
 
 namespace detail {
-
 struct is_addible_with_impl {
     template <class... Args>
     static auto check(...) -> std::bool_constant<false>;
