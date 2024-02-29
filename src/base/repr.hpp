@@ -1,8 +1,10 @@
 #pragma once
 
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "traits.hpp"
@@ -10,7 +12,7 @@
 namespace detail {
 
 template <typename T>
-inline std::string type_str(const T& t) {
+inline std::string type_str(const T&) {
     return "T";
 }
 template <typename T, std::enable_if_t<not has_repr_v<T>, std::nullptr_t> = nullptr>
@@ -33,7 +35,21 @@ inline std::string type_str(const char&) {
     return "char";
 }
 inline std::string repr(const char& t) {
-    return (std::ostringstream() << "'" << t << "'").str();
+    std::vector<std::string> v(128, "");
+    v['\0'] = "\\0";
+    v['\a'] = "\\a";
+    v['\b'] = "\\b";
+    v['\f'] = "\\f";
+    v['\r'] = "\\r";
+    v['\n'] = "\\n";
+    v['\v'] = "\\v";
+    v['\''] = "\\'";
+    v['\\'] = "\\\\";
+    if (!v[t].empty())
+        return (std::ostringstream() << "'" << v[t] << "'").str();
+    if (32 <= t and t <= 126)
+        return (std::ostringstream() << "'" << t << "'").str();
+    return (std::ostringstream() << "'x" << std::hex << (int)t << "'").str();
 }
 
 inline std::string type_str(const int&) {
@@ -116,10 +132,8 @@ inline std::string repr(const std::vector<T>& t) {
     std::ostringstream ret;
     ret << type_str(t) << "{";
     for (auto itr = t.begin(); itr != t.end(); itr++) {
+        if (itr != t.begin()) ret << ", ";
         ret << repr(*itr);
-        if (itr != --t.end()) {
-            ret << ", ";
-        }
     }
     ret << "}";
     return ret.str();
@@ -135,10 +149,39 @@ inline std::string repr(const std::set<T>& t) {
     std::ostringstream ret;
     ret << type_str(t) << "{";
     for (auto itr = t.begin(); itr != t.end(); itr++) {
+        if (itr != t.begin()) ret << ", ";
         ret << repr(*itr);
-        if (itr != --t.end()) {
-            ret << ", ";
-        }
+    }
+    ret << "}";
+    return ret.str();
+}
+
+template <typename T1, typename T2>
+inline std::string type_str(const std::pair<T1, T2>&) {
+    T1 t1;
+    T2 t2;
+    return "std::pair<" + type_str(t1) + ", " + type_str(t2) + ">";
+}
+template <typename T1, typename T2>
+inline std::string repr(const std::pair<T1, T2>& t) {
+    std::ostringstream ret;
+    ret << type_str(t) << "{" << repr(t.first) << ", " << repr(t.second) << "}";
+    return ret.str();
+}
+
+template <typename T1, typename T2>
+inline std::string type_str(const std::map<T1, T2>&) {
+    T1 t1;
+    T2 t2;
+    return "std::map<" + type_str(t1) + ", " + type_str(t2) + ">";
+}
+template <typename T1, typename T2>
+inline std::string repr(const std::map<T1, T2>& t) {
+    std::ostringstream ret;
+    ret << type_str(t) << "{";
+    for (auto itr = t.begin(); itr != t.end(); itr++) {
+        if (itr != t.begin()) ret << ", ";
+        ret << "{" << repr(itr->first) << ", " << repr(itr->second) << "}";
     }
     ret << "}";
     return ret.str();
