@@ -1,13 +1,16 @@
 #pragma once
 
-#include <cmath>
+#include <algorithm>
 #include <iostream>
 #include <limits>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
+#include "../base/repr.hpp"
+
 /**
- * inf型をもつ整数型
+ * infをもつ整数型
  * Tは符号付き整数であり、2の補数表現で表されることを期待する
  */
 template <typename T = int, std::enable_if_t<std::is_integral_v<T> and std::is_signed_v<T>, std::nullptr_t> = nullptr>
@@ -25,6 +28,25 @@ struct infint {
     constexpr infint() noexcept : _v(0) {}
     constexpr infint(const T& t) noexcept : _v(t) {}
     constexpr infint(const infint& o) noexcept : _v(o._v) {}
+    infint(std::string_view sv) noexcept(false) {
+        std::string s(sv);
+        std::for_each(s.begin(), s.end(), [](char& c) {
+            if ('A' <= c and c <= 'Z') {
+                c = c - 'A' + 'a';
+            }
+        });
+        if (s == "plusinf") {
+            _v = _PlusInf;
+        } else if (s == "inf") {
+            _v = _PlusInf;
+        } else if (s == "minusinf") {
+            _v = _MinusInf;
+        } else if (s == "nan") {
+            _v = _NaN;
+        } else {
+            _v = std::stoll(s);
+        }
+    }
 
     /**
      * 内部表現をそのまま返す
@@ -173,9 +195,25 @@ struct infint {
         return *this;
     }
 
-    std::string repr() const noexcept {
+    static std::string type_str() noexcept {
         T t;
-        return "infint<" + type_name(t) + ">(" + repr(_v) << ")";
+        return "infint<" + ::type_str(t) + ">";
+    }
+
+    std::string repr() const noexcept {
+        std::ostringstream ret;
+        ret << type_str() << "(";
+        if (_v == _PlusInf) {
+            ret << "\"plusinf\"";
+        } else if (_v == _MinusInf) {
+            ret << "\"minusinf\"";
+        } else if (_v == _NaN) {
+            ret << "\"nan\"";
+        } else {
+            ret << ::repr(_v);
+        }
+        ret << ")";
+        return ret.str();
     }
 
     /**
