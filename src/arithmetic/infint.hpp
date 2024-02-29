@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <type_traits>
 
 /**
@@ -36,15 +37,15 @@ struct infint {
     constexpr bool isInf() const noexcept { return _v == _PlusInf; }
     constexpr bool isfinite() const noexcept { return _MinusInf < _v and _v < _PlusInf; }
 
-    constexpr T& operator=(const infint& o) noexcept { return _v = o._v; }
-    constexpr T& operator=(const T& t) noexcept { return _v = t; }
+    constexpr infint& operator=(const infint& o) noexcept { return _v = o._v; }
+    constexpr infint& operator=(const T& t) noexcept { return _v = t; }
 
-    constexpr T operator+() const noexcept { return _v; }
-    constexpr T operator-() const noexcept {
+    constexpr infint operator+() const noexcept { return _v; }
+    constexpr infint operator-() const noexcept {
         if (_v == _NaN) return _v;
         return -_v;
     }
-    constexpr T& operator*=(const infint& o) noexcept {
+    constexpr infint& operator*=(const infint& o) noexcept {
         if (isNaN() or o.isNaN()) {
             _v = _NaN;
             return *this;
@@ -74,7 +75,7 @@ struct infint {
         _v *= o._v;
         return *this;
     }
-    constexpr T& operator/=(const infint& o) noexcept {
+    constexpr infint& operator/=(const infint& o) noexcept {
         if (isNaN() or o.isNaN()) {
             _v = _NaN;
             return *this;
@@ -94,7 +95,7 @@ struct infint {
         _v /= o._v;
         return *this;
     }
-    constexpr T& operator%=(const infint& o) noexcept {
+    constexpr infint& operator%=(const infint& o) noexcept {
         if (isNaN() or o.isNaN()) {
             _v = _NaN;
             return *this;
@@ -113,7 +114,7 @@ struct infint {
         _v %= o._v;
         return *this;
     }
-    constexpr T& operator+=(const infint& o) noexcept {
+    constexpr infint& operator+=(const infint& o) noexcept {
         if (isNaN() or o.isNaN()) {
             _v = _NaN;
             return *this;
@@ -142,7 +143,7 @@ struct infint {
         _v += o._v;
         return *this;
     }
-    constexpr T& operator-=(const infint& o) noexcept {
+    constexpr infint& operator-=(const infint& o) noexcept {
         if (isNaN() or o.isNaN()) {
             _v = _NaN;
             return *this;
@@ -172,6 +173,11 @@ struct infint {
         return *this;
     }
 
+    std::string repr() const noexcept {
+        T t;
+        return "infint<" + type_name(t) + ">(" + repr(_v) << ")";
+    }
+
     /**
      * 正の無限大
      */
@@ -199,16 +205,36 @@ struct infint {
     /**
      * 正の無限大でない最大値
      */
-    constexpr static T max() noexcept {
+    constexpr static T Max() noexcept {
         return _PlusInf - 1;
     }
     /**
      * 負の無限大でない最小値
      */
-    constexpr static T min() noexcept {
+    constexpr static T Min() noexcept {
         return _MinusInf + 1;
     }
 
+    friend constexpr infint operator*(const infint& t1, const infint& t2) noexcept {
+        infint res(t1);
+        return res *= t2;
+    }
+    friend constexpr infint operator/(const infint& t1, const infint& t2) noexcept {
+        infint res(t1);
+        return res /= t2;
+    }
+    friend constexpr infint operator%(const infint& t1, const infint& t2) noexcept {
+        infint res(t1);
+        return res %= t2;
+    }
+    friend constexpr infint operator+(const infint& t1, const infint& t2) noexcept {
+        infint res(t1);
+        return res += t2;
+    }
+    friend constexpr infint operator-(const infint& t1, const infint& t2) noexcept {
+        infint res(t1);
+        return res -= t2;
+    }
     friend constexpr bool operator<(const infint& t1, const infint& t2) noexcept {
         if (t1.isNaN() or t2.isNaN()) return false;
         return t1._v < t2._v;
