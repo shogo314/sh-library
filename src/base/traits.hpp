@@ -58,16 +58,18 @@ template <class T, class = void>
 struct has_repr_impl : std::false_type {};
 template <class T>
 struct has_repr_impl<T, std::void_t<decltype(std::declval<T>().repr())>> : std::true_type {};
+}  // namespace detail
+template <class T>
+struct has_repr : detail::has_repr_impl<T>::type {};
+template <class T>
+inline constexpr bool has_repr_v = has_repr<T>::value;
+
+namespace detail {
 template <class T, class = void>
 struct has_sum_impl : std::false_type {};
 template <class T>
 struct has_sum_impl<T, std::void_t<decltype(std::declval<T>().sum())>> : std::true_type {};
 }  // namespace detail
-
-template <class T>
-struct has_repr : detail::has_repr_impl<T>::type {};
-template <class T>
-inline constexpr bool has_repr_v = has_repr<T>::value;
 template <class T>
 struct has_sum : detail::has_sum_impl<T>::type {};
 template <class T>
@@ -82,9 +84,7 @@ struct is_addible_with_impl {
     static auto check(T*, U*) -> decltype(std::declval<T>() + std::declval<U>(), std::bool_constant<true>{});
 };
 }  // namespace detail
-
 template <class T, class U>
 struct is_addible_with : decltype(detail::is_addible_with_impl::check<T, U>(nullptr, nullptr)) {};
-
 template <class T, class U>
 inline constexpr bool is_addible_with_v = is_addible_with<T, U>::value;
