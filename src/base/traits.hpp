@@ -2,8 +2,6 @@
 
 #include <type_traits>
 
-// template <typename T1, typename T2>
-// using arithmetic_type_t = std::make_signed_t<std::common_type_t<T1, T2>>;
 template <typename T1, typename T2>
 struct arithmetic_common_type {
     using type = std::common_type_t<T1, T2>;
@@ -54,21 +52,6 @@ struct arithmetic_common_type<unsigned long, long> {
 };
 template <typename T1, typename T2>
 using arithmetic_common_type_t = typename arithmetic_common_type<T1, T2>::type;
-
-// namespace detail {
-// template <class MemfunType>
-// struct has_repr_impl {
-//    private:
-//     static std::false_type confirm(...);
-//     template <class U>
-//     static auto confirm(U u) -> decltype(static_cast<MemfunType>(&U::repr), std::true_type());
-
-//    public:
-//     static constexpr bool value = decltype(confirm(std::declval<rinse::owner_t<MemfunType>>()))::value;
-// };
-// }  // namespace detail
-// template <class MemfunType>
-// struct has_repr : rinse::meta_bool<detail::has_repr_impl<MemfunType>::value> {};
 
 namespace detail {
 template <class T, class = void>
