@@ -20,8 +20,8 @@ class MergeSortTree {
     int n, sz, height;
     std::vector<std::tuple<K, S, int>> key_value_index_data;
 
-    void initialize(const std::vector<std::pair<K, S>>& k_v) {
-        n = k_v.size();
+    void initialize(const std::vector<K>& key, const std::vector<S>& value) {
+        n = key.size();
         sz = 1;
         height = 1;
         while (sz < n) {
@@ -30,7 +30,7 @@ class MergeSortTree {
         }
         key_value_index_data.assign(sz * height, {K{}, e(), 0});
         for (int i = 0; i < n; i++) {
-            key_value_index_data[i + sz * (height - 1)] = {k_v[i].first, k_v[i].second, i};
+            key_value_index_data[i + sz * (height - 1)] = {key[i], value[i], i};
         }
         int t = 1;
         for (int h = height - 1; h > 0; h--) {
@@ -46,23 +46,23 @@ class MergeSortTree {
         }
     }
 
-    S _prod_section(int l, int r, std::optional<K> a = std::nullopt, std::optional<K> b = std::nullopt) const {
+    S _prod_section(int l, int r, std::optional<K> a, std::optional<K> b) const {
         std::cerr << "l = " << l << ", r = " << r << std::endl;
-        
+
         return 0;
     }
-    S _prod(int l, int r, std::optional<K> a = std::nullopt, std::optional<K> b = std::nullopt) const {
+    S _prod(int l, int r, std::optional<K> a, std::optional<K> b) const {
         S ret = e();
         int h = height - 1;
         int t = 1;
         while (l < r) {
             if (l & t) {
-                ret += _prod_section(l, l + t);
+                ret += _prod_section(h * sz + l, h * sz + l + t, a, b);
                 l += t;
             }
             if (r & t) {
                 r -= t;
-                ret += _prod_section(r, r + t);
+                ret += _prod_section(h * sz + r, h * sz + r + t, a, b);
             }
             h--;
             t <<= 1;
@@ -73,26 +73,30 @@ class MergeSortTree {
    public:
     MergeSortTree() = default;
     explicit MergeSortTree(const std::vector<std::pair<K, S>>& key_value) {
-        this->initialize(key_value);
+        std::vector<K> key;
+        std::vector<S> value;
+        key.reserve(key_value.size());
+        value.reserve(key_value.size());
+        for (size_t i = 0; i < key_value.size(); i++) {
+            key.push_back(key_value[i].first);
+            value.push_back(key_value[i].second);
+        }
+        this->initialize(key, value);
     }
     /**
-     * v データ k ソートする鍵
+     * key ソートする基準
+     * value prodで計算する対象
      */
     MergeSortTree(const std::vector<K>& key, const std::vector<S>& value) {
         assert(key.size() == value.size());
-        std::vector<std::pair<K, S>> k_v;
-        k_v.reserve(key.size());
-        for (size_t i = 0; i < key.size(); i++) {
-            k_v.emplace_back(key[i], value[i]);
-        }
-        this->initialize(k_v);
+        this->initialize(key, value);
     }
 
     /**
-     * ploduct value[i] s.t. a <= key[i] < b \in [l, r)
+     * ploduct value[i] s.t. a <= key[i] < b , i in [l, r)
      */
     S prod(std::optional<int> l = std::nullopt, std::optional<int> r = std::nullopt, std::optional<K> a = std::nullopt, std::optional<K> b = std::nullopt) const {
-        if (!(a < b)) return e();
+        if (a.has_value() and b.has_value() and not(a.value() < b.value())) return e();
         if (l >= r) return e();
         return _prod(l.value_or(0), r.value_or(n), a, b);
     }
