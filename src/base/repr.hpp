@@ -123,6 +123,11 @@ inline std::string repr(const long double& t) {
     return std::to_string(t) + "l";
 }
 
+template <typename T1, typename T2>
+inline std::string type_str(const std::map<T1, T2>&);
+template <typename T1, typename T2>
+inline std::string repr(const std::map<T1, T2>& t);
+
 template <typename T>
 inline std::string type_str(const std::vector<T>&) {
     T t;
