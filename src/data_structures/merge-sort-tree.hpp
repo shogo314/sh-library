@@ -2,15 +2,16 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <optional>
-#include <tuple>
 #include <utility>
 #include <vector>
 
 class MergeSortTree {
     using S = long long;
     using K = int;
+    static S inv(const S& a) {
+        return -a;
+    }
     static S op(const S& a, const S& b) {
         return a + b;
     }
@@ -18,7 +19,8 @@ class MergeSortTree {
         return 0;
     }
     int n, sz, height;
-    std::vector<std::tuple<K, S, int>> key_value_index_data;
+    std::vector<std::pair<K, S>> key_value_data;
+    std::vector<S> cumulative_value;
 
     void initialize(const std::vector<K>& key, const std::vector<S>& value) {
         n = key.size();
@@ -28,28 +30,72 @@ class MergeSortTree {
             sz <<= 1;
             height++;
         }
-        key_value_index_data.assign(sz * height, {K{}, e(), 0});
+        key_value_data.assign(sz * height, {{}, e()});
+        cumulative_value.assign(sz * height, {});
         for (int i = 0; i < n; i++) {
-            key_value_index_data[i + sz * (height - 1)] = {key[i], value[i], i};
+            key_value_data[i + sz * (height - 1)] = {key[i], value[i]};
+            cumulative_value[i + sz * (height - 1)] = value[i];
         }
         int t = 1;
+        // std::cout << "key_value_data[" << (height - 1) * sz << ":" << height * sz << "] =";
+        // for (int i = 0; i < sz; i++) {
+        //     std::cout << " {" << key_value_data[(height - 1) * sz + i].first << ", " << key_value_data[(height - 1) * sz + i].second << "}";
+        // }
+        // std::cout << std::endl;
+        // std::cout << "cumulative_value[" << (height - 1) * sz << ":" << height * sz << "] =";
+        // for (int i = 0; i < sz; i++) {
+        //     std::cout << " " << cumulative_value[(height - 1) * sz + i];
+        // }
+        // std::cout << std::endl;
         for (int h = height - 1; h > 0; h--) {
             for (int i = 0; i < n; i += t * 2) {
-                std::merge(key_value_index_data.begin() + h * sz + i,
-                           key_value_index_data.begin() + h * sz + std::min(n, i + t),
-                           key_value_index_data.begin() + h * sz + std::min(n, i + t),
-                           key_value_index_data.begin() + h * sz + std::min(n, i + t * 2),
-                           key_value_index_data.begin() + (h - 1) * sz + i,
-                           [](const std::tuple<K, S, int>& p1, const std::tuple<K, S, int>& p2) { return std::get<0>(p1) < std::get<0>(p2); });
+                std::merge(key_value_data.begin() + h * sz + i,
+                           key_value_data.begin() + h * sz + std::min(n, i + t),
+                           key_value_data.begin() + h * sz + std::min(n, i + t),
+                           key_value_data.begin() + h * sz + std::min(n, i + t * 2),
+                           key_value_data.begin() + (h - 1) * sz + i,
+                           [](const std::pair<K, S>& p1, const std::pair<K, S>& p2) { return p1.first < p2.first; });
+                if (i < n) {
+                    cumulative_value[(h - 1) * sz + i] = key_value_data[(h - 1) * sz + i].second;
+                }
+                for (int j = i + 1; j < std::min(n, i + t * 2); j++) {
+                    cumulative_value[(h - 1) * sz + j] = op(cumulative_value[(h - 1) * sz + j - 1], key_value_data[(h - 1) * sz + j].second);
+                }
             }
+            // std::cout << "key_value_data[" << (h - 1) * sz << ":" << h * sz << "] =";
+            // for (int i = 0; i < sz; i++) {
+            //     std::cout << " {" << key_value_data[(h - 1) * sz + i].first << ", " << key_value_data[(h - 1) * sz + i].second << "}";
+            // }
+            // std::cout << std::endl;
+            // std::cout << "cumulative_value[" << (h - 1) * sz << ":" << h * sz << "] =";
+            // for (int i = 0; i < sz; i++) {
+            //     std::cout << " " << cumulative_value[(h - 1) * sz + i];
+            // }
+            // std::cout << std::endl;
             t <<= 1;
         }
     }
 
     S _prod_section(int l, int r, std::optional<K> a, std::optional<K> b) const {
-        std::cerr << "l = " << l << ", r = " << r << std::endl;
-
-        return 0;
+        // std::cerr << "l = " << l%sz << ", r = " << r%sz << std::endl;
+        S ret = e();
+        if (a.has_value()) {
+            auto itr = std::lower_bound(cumulative_value.begin() + l, cumulative_value.begin() + r, a.value());
+            if (itr == cumulative_value.begin() + l) {
+                ret = op(ret, inv(*(--itr)));
+            } else {
+                ret = e();
+            }
+        } else {
+            ret = e();
+        }
+        if (b.has_value()) {
+            auto itr = std::upper_bound(cumulative_value.begin() + l, cumulative_value.begin() + r, b.value());
+            ret = op(ret, *(--itr));
+        } else {
+            ret = op(ret, *(cumulative_value.begin() + r - 1));
+        }
+        return ret;
     }
     S _prod(int l, int r, std::optional<K> a, std::optional<K> b) const {
         S ret = e();
@@ -101,21 +147,12 @@ class MergeSortTree {
         return _prod(l.value_or(0), r.value_or(n), a, b);
     }
 
-    /**
-     * @brief 内容を出力する
-     *
-     * @tparam CharT 出力ストリームの文字型
-     * @tparam Traits 出力ストリームの文字型特性
-     * @param os 出力ストリーム
-     * @param mst マージソートツリー
-     * @return std::basic_ostream<CharT, Traits>& 出力ストリーム
-     */
-    template <class CharT, class Traits>
-    friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, const MergeSortTree& mst) {
-        for (int i = 0; i < mst.n; i++) {
-            if (i != 0) os << CharT(' ');
-            os << std::get<1>(mst.key_value_index_data[mst.sz * (mst.height - 1) + i]);
+    std::vector<std::pair<K, S>> to_vector() const {
+        std::vector<std::pair<K, S>> ret;
+        ret.reserve(n);
+        for (int i = 0; i < n; i++) {
+            ret.push_back(key_value_data[(height - 1) * sz + i]);
         }
-        return os;
+        return ret;
     }
 };
