@@ -28,13 +28,19 @@ struct Counter : private std::map<Tp, Nm> {
     using std::map<Tp, Nm>::clear;
     using std::map<Tp, Nm>::insert;
     using std::map<Tp, Nm>::insert_or_assign;
-    using std::map<Tp, Nm>::at;
-    using std::map<Tp, Nm>::count;
     using std::map<Tp, Nm>::emplace;
     using std::map<Tp, Nm>::emplace_hint;
-    using std::map<Tp, Nm>::operator[];
-    using std::map<Tp, Nm>::find;
+    using std::map<Tp, Nm>::try_emplace;
     using std::map<Tp, Nm>::erase;
+
+    using std::map<Tp, Nm>::operator[];
+    using std::map<Tp, Nm>::at;
+    using std::map<Tp, Nm>::count;
+    using std::map<Tp, Nm>::find;
+    // using std::map<Tp, Nm>::contains; C++20
+    using std::map<Tp, Nm>::equal_range;
+    using std::map<Tp, Nm>::lower_bound;
+    using std::map<Tp, Nm>::upper_bound;
 
     using std::map<Tp, Nm>::key_type;
     using std::map<Tp, Nm>::value_type;
