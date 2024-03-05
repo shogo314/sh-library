@@ -34,6 +34,7 @@ struct Counter : public std::map<T, long long> {
             this->operator[](c)++;
         }
     }
+    Counter(const key_type& x) : map<key_type, mapped_type>{} { this->operator[](x)++; }
     Counter(const std::vector<key_type>& v) : map<key_type, mapped_type>{} { add(v); }
     template <size_t N>
     Counter(const std::array<key_type, N>& v) { add(v); }
