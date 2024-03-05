@@ -1,78 +1,69 @@
 #pragma once
 #include <array>
-#include <initializer_list>
 #include <map>
 #include <set>
 #include <string_view>
 #include <type_traits>
 #include <vector>
 
-template <typename Tp, typename Nm = long long, std::enable_if_t<std::is_integral_v<Nm>, std::nullptr_t> = nullptr>
-struct Counter : private std::map<Tp, Nm> {
-    using std::map<Tp, Nm>::map;
-    using std::map<Tp, Nm>::operator=;
+template <typename T>
+struct Counter : public std::map<T, long long> {
+    using key_type = T;
+    using mapped_type = long long;
+    using std::map<key_type, mapped_type>::map;
 
-    using std::map<Tp, Nm>::begin;
-    using std::map<Tp, Nm>::cbegin;
-    using std::map<Tp, Nm>::end;
-    using std::map<Tp, Nm>::cend;
-    using std::map<Tp, Nm>::rbegin;
-    using std::map<Tp, Nm>::crbegin;
-    using std::map<Tp, Nm>::rend;
-    using std::map<Tp, Nm>::crend;
-
-    using std::map<Tp, Nm>::empty;
-    using std::map<Tp, Nm>::size;
-    using std::map<Tp, Nm>::max_size;
-
-    using std::map<Tp, Nm>::clear;
-    using std::map<Tp, Nm>::insert;
-    using std::map<Tp, Nm>::insert_or_assign;
-    using std::map<Tp, Nm>::emplace;
-    using std::map<Tp, Nm>::emplace_hint;
-    using std::map<Tp, Nm>::try_emplace;
-    using std::map<Tp, Nm>::erase;
-
-    using std::map<Tp, Nm>::operator[];
-    using std::map<Tp, Nm>::at;
-    using std::map<Tp, Nm>::count;
-    using std::map<Tp, Nm>::find;
-    // using std::map<Tp, Nm>::contains; C++20
-    using std::map<Tp, Nm>::equal_range;
-    using std::map<Tp, Nm>::lower_bound;
-    using std::map<Tp, Nm>::upper_bound;
-
-    using std::map<Tp, Nm>::key_type;
-    using std::map<Tp, Nm>::value_type;
-
-    using std::map<Tp, Nm>::iterator;
-    using std::map<Tp, Nm>::pointer;
-    using std::map<Tp, Nm>::reference;
-
-    Counter(const std::vector<Tp>& v) : std::map<Tp, Nm>() {
+    void add(const std::vector<key_type>& v) {
         for (const auto& i : v) {
             this->operator[](i)++;
         }
     }
     template <size_t N>
-    Counter(const std::array<Tp, N>& v) : std::map<Tp, Nm>() {
+    void add(const std::array<key_type, N>& v) {
         for (const auto& i : v) {
             this->operator[](i)++;
         }
     }
-    Counter(const std::set<Tp>& v) : std::map<Tp, Nm>() {
+    void add(const std::set<key_type>& v) {
         for (const auto& i : v) {
             this->operator[](i)++;
         }
     }
-    template <std::enable_if_t<std::is_same_v<char, Tp>, std::nullptr_t> = nullptr>
-    Counter(const std::string_view& s) : std::map<Tp, Nm>() {
+    template <std::enable_if_t<std::is_same_v<char, key_type>, std::nullptr_t> = nullptr>
+    void add(const std::string_view& s) {
         for (const auto& c : s) {
             this->operator[](c)++;
         }
     }
+    Counter(const std::vector<key_type>& v) : map<key_type, mapped_type>{} { add(v); }
+    template <size_t N>
+    Counter(const std::array<key_type, N>& v) { add(v); }
+    Counter(const std::set<key_type>& v) { add(v); }
+    template <std::enable_if_t<std::is_same_v<char, key_type>, std::nullptr_t> = nullptr>
+    Counter(const std::string_view& s) { add(s); }
 
-    bool contains(const Tp& x) const {
-        return find(x) != end();
+    bool contains(const key_type& x) const {
+        return this->find(x) != this->end();
+    }
+
+    void inc(const key_type& x, const mapped_type& c = 1) {
+        this->operator[](x) += c;
+    }
+
+    void dec(const key_type& x, const mapped_type& c = 1) {
+        this->operator[](x) -= c;
+        if (this->operator[](x) <= 0) {
+            this->erase(x);
+        }
+    }
+
+    Counter& operator+=(const Counter& o) {
+        for (const auto [i, c] : o) {
+            this->operator[](i) += c;
+        }
+        return *this;
+    }
+    friend Counter operator+(const Counter& a, const Counter& b) {
+        Counter res(a);
+        return res += b;
     }
 };
