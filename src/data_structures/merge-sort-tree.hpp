@@ -6,9 +6,15 @@
 #include <utility>
 #include <vector>
 
+/**
+ * K key_type
+ * S value_type
+ */
+template <typename K = long long, typename S = long long>
 class MergeSortTree {
-    using K = int;
-    using S = long long;
+    using Compare = std::less<K>;
+    using Operator = std::plus<S>;
+    using Inverse = std::negate<S>;
 
     struct Element {
         S operator()() const {
@@ -17,9 +23,6 @@ class MergeSortTree {
     };
 
    public:
-    using Compare = std::less<K>;
-    using Operator = std::plus<S>;
-    using Inverse = std::negate<S>;
     using key_type = K;
     using value_type = S;
 
@@ -29,10 +32,10 @@ class MergeSortTree {
     inline constexpr static auto e = Element();
 
     int n, sz, height;
-    std::vector<K> key_data;
-    std::vector<S> cumulative_value;
+    std::vector<key_type> key_data;
+    std::vector<value_type> cumulative_value;
 
-    void initialize(const std::vector<K>& key, const std::vector<S>& value) {
+    void initialize(const std::vector<key_type>& key, const std::vector<value_type>& value) {
         n = key.size();
         sz = 1;
         height = 1;
@@ -41,7 +44,7 @@ class MergeSortTree {
             height++;
         }
         key_data.assign(sz * height, {});
-        std::vector<S> value_data(sz * height, e());
+        std::vector<value_type> value_data(sz * height, e());
         cumulative_value.assign(sz * height, {});
         for (int i = 0; i < n; i++) {
             key_data[(height - 1) * sz + i] = key[i];
@@ -91,8 +94,8 @@ class MergeSortTree {
         }
     }
 
-    S _prod_section(int l, int r, std::optional<K> a, std::optional<K> b) const {
-        S ret = e();
+    value_type _prod_section(int l, int r, std::optional<key_type> a, std::optional<key_type> b) const {
+        value_type ret = e();
         if (a.has_value()) {
             int i = std::lower_bound(key_data.begin() + l, key_data.begin() + r, a.value()) - key_data.begin();
             if (i != l) {
@@ -109,8 +112,8 @@ class MergeSortTree {
         }
         return ret;
     }
-    S _prod(int l, int r, std::optional<K> a, std::optional<K> b) const {
-        S ret = e();
+    value_type _prod(int l, int r, std::optional<key_type> a, std::optional<key_type> b) const {
+        value_type ret = e();
         int h = height - 1;
         int t = 1;
         while (l < r) {
@@ -130,9 +133,9 @@ class MergeSortTree {
 
    public:
     MergeSortTree() = default;
-    explicit MergeSortTree(const std::vector<std::pair<K, S>>& key_value) {
-        std::vector<K> key;
-        std::vector<S> value;
+    explicit MergeSortTree(const std::vector<std::pair<key_type, value_type>>& key_value) {
+        std::vector<key_type> key;
+        std::vector<value_type> value;
         key.reserve(key_value.size());
         value.reserve(key_value.size());
         for (size_t i = 0; i < key_value.size(); i++) {
@@ -145,7 +148,7 @@ class MergeSortTree {
      * key ソートする基準
      * value prodで計算する対象
      */
-    MergeSortTree(const std::vector<K>& key, const std::vector<S>& value) {
+    MergeSortTree(const std::vector<key_type>& key, const std::vector<value_type>& value) {
         assert(key.size() == value.size());
         this->initialize(key, value);
     }
@@ -153,18 +156,9 @@ class MergeSortTree {
     /**
      * ploduct value[i] s.t. a <= key[i] < b , i in [l, r)
      */
-    S prod(std::optional<int> l = std::nullopt, std::optional<int> r = std::nullopt, std::optional<K> a = std::nullopt, std::optional<K> b = std::nullopt) const {
+    value_type prod(std::optional<int> l = std::nullopt, std::optional<int> r = std::nullopt, std::optional<key_type> a = std::nullopt, std::optional<key_type> b = std::nullopt) const {
         if (a.has_value() and b.has_value() and not(a.value() < b.value())) return e();
         if (l.has_value() and r.has_value() and l >= r) return e();
         return _prod(l.value_or(0), r.value_or(n), a, b);
     }
-
-    // std::vector<std::pair<K, S>> to_vector() const {
-    //     std::vector<std::pair<K, S>> ret;
-    //     ret.reserve(n);
-    //     for (int i = 0; i < n; i++) {
-    //         ret.push_back(key_value_data[(height - 1) * sz + i]);
-    //     }
-    //     return ret;
-    // }
 };
