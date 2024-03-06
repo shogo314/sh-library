@@ -20,7 +20,12 @@ struct Default {
  * K key_type
  * Sは群である必要がある
  */
-template <typename S = long long, typename K = long long, class Operator = std::plus<S>, class Element = detail::Default<S>, class Inverse = std::negate<S>, class Compare = std::less<K>>
+template <typename S = long long,
+          typename K = long long,
+          class Operator = std::plus<S>,
+          class Element = detail::Default<S>,
+          class Inverse = std::negate<S>,
+          class Compare = std::less<K>>
 class MergeSortTree {
    public:
     using value_type = S;
