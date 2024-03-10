@@ -27,11 +27,10 @@ class SetList {
 
        public:
         using difference_type = SetList::difference_type;
-        using value_type = iterator;
+        using value_type = SetList::value_type;
         using pointer = SetList::value_type*;
         using reference = SetList::value_type&;
         using iterator_category = std::bidirectional_iterator_tag;
-        
     };
 
    private:
