@@ -31,6 +31,18 @@ class SetList {
         using pointer = SetList::value_type*;
         using reference = SetList::value_type&;
         using iterator_category = std::bidirectional_iterator_tag;
+
+        pointer operator->() const noexcept {
+            return *itr;
+        }
+        reference operator*() const noexcept {
+            return *itr;
+        }
+        iterator operator++(int) {
+            iterator res(*this);
+            ++itr;
+            return res;
+        }
     };
 
    private:
