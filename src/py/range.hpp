@@ -49,26 +49,27 @@ struct Range {
     }
 
     struct const_iterator {
+       public:
+        using difference_type = Range::difference_type;
+        using value_type = Range::value_type;
+        using pointer = const Range::value_type*;
+        using reference = const Range::value_type&;
+        using iterator_category = std::random_access_iterator_tag;
+
        private:
         const Range& range;
-        Range::value_type value;
+        value_type value;
 
         constexpr bool same_range(const const_iterator& o) const noexcept {
             return range.start == o.range.start and range.stop == o.range.stop and range.step == o.range.step;
         }
 
        public:
-        using difference_type = Range::difference_type;
-        using value_type = const_iterator;
-        using pointer = const Range::value_type*;
-        using reference = const Range::value_type&;
-        using iterator_category = std::random_access_iterator_tag;
-
-        constexpr const_iterator(const Range& _range, Range::value_type _value) noexcept
+        constexpr const_iterator(const Range& _range, value_type _value) noexcept
             : range(_range), value(_value) {}
         constexpr const_iterator(const const_iterator& o) noexcept
             : range(o.range), value(o.value) {}
-        constexpr const Range::value_type& base() const noexcept {
+        constexpr const value_type& base() const noexcept {
             return value;
         }
         constexpr const_iterator& operator=(const const_iterator& o) {
