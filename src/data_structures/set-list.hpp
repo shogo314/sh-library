@@ -22,8 +22,8 @@ class SetList {
     using size_type = std::size_t;
 
     class iterator {
-        SetList& setlist;
-        base_type_itr& itr;
+        SetList* setlist;
+        base_type_itr* itr;
 
        public:
         using difference_type = SetList::difference_type;
@@ -33,10 +33,10 @@ class SetList {
         using iterator_category = std::bidirectional_iterator_tag;
 
         pointer operator->() const noexcept {
-            return *itr;
+            return itr->operator->();
         }
         reference operator*() const noexcept {
-            return *itr;
+            return itr->operator*()();
         }
         iterator operator++(int) {
             iterator res(*this);
