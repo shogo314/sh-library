@@ -1,8 +1,6 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
-#include <functional>
-#include <iterator>
 #include <numeric>
 #include <type_traits>
 #include "traits.hpp"
