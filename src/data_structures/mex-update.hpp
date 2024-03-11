@@ -6,8 +6,9 @@
 #include <set>
 #include <vector>
 
+template <typename T>
 struct MexUpdate {
-    using value_type = long long;
+    using value_type = T;
 
    private:
     using inner_value_type = int;
@@ -65,6 +66,7 @@ struct MexUpdate {
                 itr->second++;
             }
         }
+        v[k] = x;
     }
     value_type prod() const {
         return *s.begin();
