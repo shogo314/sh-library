@@ -40,3 +40,15 @@ HAS_METHOD_ARG(upper_bound)
 
 #define ENABLE_IF_T_IMPL(expr) std::enable_if_t<expr, std::nullptr_t> = nullptr
 #define ENABLE_IF_T(...) ENABLE_IF_T_IMPL((__VA_ARGS__))
+
+// namespace detail {
+// template <class T, typename U, class = void>
+// struct is_container_impl : std::false_type {};
+// template <class T, typename U>
+// struct is_container_impl<T, U, std::void_t<typename T::value_type, decltype(std::is_same_v<typename T::value_type, U>)>>
+//     : std::true_type {};
+// }  // namespace detail
+// template <class T, typename U>
+// struct is_container : detail::is_container_impl<T, U>::type {};
+// template <class T, typename U>
+// inline constexpr bool is_container_v = is_container<T, U>::value;

@@ -2,7 +2,50 @@
 #include <cmath>
 #include <numeric>
 #include <vector>
+
 #include "traits.hpp"
+
+#define METHOD_EXPAND(func_name)                                             \
+    template <typename T, ENABLE_IF_T(has_##func_name##_v<T>)>               \
+    inline constexpr auto func_name(const T &t) -> decltype(t.func_name()) { \
+        return t.func_name();                                                \
+    }
+
+METHOD_EXPAND(sum)
+METHOD_EXPAND(product)
+METHOD_EXPAND(reversed)
+
+template <typename T, ENABLE_IF_T(not has_reversed_v<T>)>
+inline constexpr T reversed(T t) {
+    using namespace std;
+    reverse(t.begin(), t.end());
+    return t;
+}
+
+template <typename T>
+inline constexpr T sorted(T t) {
+    using namespace std;
+    sort(t.begin(), t.end());
+    return t;
+}
+
+#define METHOD_AND_FUNC_ARG_EXPAND(func_name)                                     \
+    template <typename T, typename U, ENABLE_IF_T(has_##func_name##_v<T, U>)>     \
+    inline constexpr auto func_name(const T &t, const U &u)                       \
+        -> decltype(t.func_name(u)) {                                             \
+        return t.func_name(u);                                                    \
+    }                                                                             \
+    template <typename T, typename U, ENABLE_IF_T(not has_##func_name##_v<T, U>)> \
+    inline constexpr auto func_name(const T &t, const U &u)                       \
+        -> decltype(func_name(t.begin(), t.end(), u)) {                           \
+        using namespace std;                                                      \
+        return func_name(t.begin(), t.end(), u);                                  \
+    }
+
+METHOD_AND_FUNC_ARG_EXPAND(count)
+METHOD_AND_FUNC_ARG_EXPAND(find)
+METHOD_AND_FUNC_ARG_EXPAND(lower_bound)
+METHOD_AND_FUNC_ARG_EXPAND(upper_bound)
 
 template <typename T>
 inline T max(const std::vector<T> &v) {
@@ -14,13 +57,13 @@ inline T min(const std::vector<T> &v) {
     return *std::min_element(v.begin(), v.end());
 }
 
-template <typename T>
-inline T sum(const std::vector<T> &v, T init = {}) {
+template <class C, ENABLE_IF_T(not has_sum_v<C>)>
+inline typename C::value_type sum(const C &v, typename C::value_type init = {}) {
     return std::accumulate(v.begin(), v.end(), init);
 }
 
-template <typename T>
-inline T product(const std::vector<T> &v, T init = {1}) {
+template <class C, ENABLE_IF_T(not has_product_v<C>)>
+inline typename C::value_type product(const C &v, typename C::value_type init = {1}) {
     return std::accumulate(v.begin(), v.end(), init, std::multiplies<T>());
 }
 
