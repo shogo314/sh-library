@@ -53,3 +53,33 @@ constexpr T extgcd(const T &a, const T &b, T &x, T &y) {
     }
     return d;
 }
+
+template <class F, ENABLE_IF_T(std::is_function_v<F>)>
+inline constexpr long long binary_search(long long ok, long long ng, F f) {
+    assert(f(ok));
+    assert(not f(ng));
+    while (std::abs(ok - ng) > 1) {
+        long long mid = (ok + ng) / 2;
+        if (f(mid)) {
+            ok = mid;
+        } else {
+            ng = mid;
+        }
+    }
+    return ok;
+}
+
+template <class F, ENABLE_IF_T(std::is_function_v<F>)>
+inline constexpr long double binary_search(long double ok, long double ng, F f) {
+    assert(f(ok));
+    assert(not f(ng));
+    for (int i = 0; i < 100; i++) {
+        long double mid = (ok + ng) / 2;
+        if (f(mid)) {
+            ok = mid;
+        } else {
+            ng = mid;
+        }
+    }
+    return ok;
+}
