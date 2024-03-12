@@ -35,7 +35,7 @@ struct MexUpdate {
         assert(n + 1 < e);
         std::set<inner_value_type>::iterator hint = s.end();
         for (inner_value_type i = n; i >= 0; --i) {
-            s.insert(i);
+            hint = s.emplace_hint(hint, i);
         }
         for (const auto& i : init) {
             if (0 <= i and i <= n) {
