@@ -5,7 +5,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <numeric>
-
 #include "traits.hpp"
 
 #define METHOD_EXPAND(func_name)                                             \
@@ -151,6 +150,10 @@ inline constexpr mem_value_type<C> mex(const C &v) {
 }
 
 template <class C>
-inline constexpr mem_difference_type<C> bisect_left(const C &v) {
-    return std::distance(v.begin(), std::lower_bound(v.begin(), v.end()))
+inline constexpr mem_difference_type<C> bisect_left(const C &v, const mem_value_type<C> &x) {
+    return std::distance(v.begin(), std::lower_bound(v.begin(), v.end(), x))
+}
+template <class C>
+inline constexpr mem_difference_type<C> bisect_right(const C &v, const mem_value_type<C> &x) {
+    return std::distance(v.begin(), std::upper_bound(v.begin(), v.end(), x))
 }
