@@ -151,9 +151,9 @@ inline constexpr mem_value_type<C> mex(const C &v) {
 
 template <class C>
 inline constexpr mem_difference_type<C> bisect_left(const C &v, const mem_value_type<C> &x) {
-    return std::distance(v.begin(), std::lower_bound(v.begin(), v.end(), x))
+    return std::distance(v.begin(), lower_bound(v, x))
 }
 template <class C>
 inline constexpr mem_difference_type<C> bisect_right(const C &v, const mem_value_type<C> &x) {
-    return std::distance(v.begin(), std::upper_bound(v.begin(), v.end(), x))
+    return std::distance(v.begin(), upper_bound(v, x))
 }
