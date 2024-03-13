@@ -10,7 +10,7 @@ template <typename T>
 std::vector<std::ptrdiff_t> sorted_idx(const std::vector<T> &v) {
     std::vector<std::ptrdiff_t> ret(v.size());
     std::iota(ret.begin(), ret.end(), 0);
-    std::sort(v.begin(), v.end(), [&](std::ptrdiff_t i, std::ptrdiff_t j) {
+    std::sort(ret.begin(), ret.end(), [&](std::ptrdiff_t i, std::ptrdiff_t j) {
         return v[i] < v[j];
     });
     return ret;
