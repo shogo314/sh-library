@@ -1,6 +1,5 @@
 #pragma once
 #include <cassert>
-#include <iostream>
 #include <limits>
 #include <map>
 #include <set>
@@ -11,30 +10,28 @@ struct MexUpdate {
     using value_type = T;
 
    private:
-    using inner_value_type = int;
-
     inline constexpr static value_type e = std::numeric_limits<value_type>::max();
 
-    inner_value_type n;
+    int n;
     std::vector<value_type> v;
-    std::set<inner_value_type> s;
-    std::map<inner_value_type, size_t> m;
+    std::set<int> s;
+    std::map<int, size_t> m;
 
    public:
     MexUpdate() = default;
     MexUpdate(int n) : n(n), v(n, e) {
         assert(n > 0);
         assert(n + 1 < e);
-        std::set<inner_value_type>::iterator hint = s.end();
-        for (inner_value_type i = n; i >= 0; --i) {
+        std::set<int>::iterator hint = s.end();
+        for (int i = n; i >= 0; --i) {
             hint = s.emplace_hint(hint, i);
         }
     }
     MexUpdate(const std::vector<value_type>& init) : n(init.size()), v(init) {
         assert(n > 0);
         assert(n + 1 < e);
-        std::set<inner_value_type>::iterator hint = s.end();
-        for (inner_value_type i = n; i >= 0; --i) {
+        std::set<int>::iterator hint = s.end();
+        for (int i = n; i >= 0; --i) {
             hint = s.emplace_hint(hint, i);
         }
         for (const auto& i : init) {
@@ -47,7 +44,7 @@ struct MexUpdate {
     void set(int k, const value_type& x) {
         assert(0 <= k and k < n);
         if (0 <= v[k] and v[k] <= n) {
-            inner_value_type v_k = v[k];
+            int v_k = v[k];
             auto itr = m.find(v_k);
             if (itr->second > 1) {
                 itr->second--;
@@ -57,7 +54,7 @@ struct MexUpdate {
             }
         }
         if (0 <= x and x <= n) {
-            inner_value_type xx = x;
+            int xx = x;
             auto itr = m.find(xx);
             if (itr == m.end()) {
                 m[xx]++;
