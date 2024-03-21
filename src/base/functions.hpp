@@ -82,3 +82,22 @@ inline constexpr std::common_type_t<M, N> binary_search(const M &ok, const N &ng
     }
     return _ok;
 }
+
+/**
+ * 0 <= x < a
+ */
+constexpr bool inrange(long long x, long long a) {
+    return 0 <= x and x < a;
+}
+/**
+ * a <= x < b
+ */
+constexpr bool inrange(long long x, long long a, long long b) {
+    return a <= x and x < b;
+}
+/**
+ * 0 <= x < a and 0 <= y < b
+ */
+constexpr bool inrect(long long x, long long y, long long a, long long b) {
+    return 0 <= x and x < a and 0 <= y and y < b;
+}
