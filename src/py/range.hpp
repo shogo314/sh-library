@@ -36,6 +36,10 @@ struct Range {
         }
     }
 
+    constexpr Range(value_type _start, value_type _stop, value_type _step, value_type _norm_stop)
+        : start(_start), stop(_stop), step(_step), norm_stop(_norm_stop) {
+    }
+
    public:
     constexpr Range(value_type _start, value_type _stop, value_type _step)
         : start(_start), stop(_stop), step(_step), norm_stop(normalize(_start, _stop, _step)) {
@@ -47,6 +51,8 @@ struct Range {
     constexpr Range()
         : start(0), stop(1), step(1), norm_stop(1) {
     }
+    constexpr Range(const Range& o) = default;
+    Range& operator=(const Range& o) = delete;
 
     struct const_iterator {
        public:
@@ -218,8 +224,43 @@ struct Range {
         value_type l = size();
         return l * (norm_stop - step + start) / 2;
     }
+    constexpr value_type min() const {
+        assert(not empty());
+        if (step > 0) {
+            return start;
+        } else {
+            return norm_stop - step;
+        }
+    }
+    constexpr value_type max() const {
+        assert(not empty());
+        if (step > 0) {
+            return norm_stop - step;
+        } else {
+            return start;
+        }
+    }
+    constexpr value_type product_xor() const noexcept {
+        if (empty()) return 0;
+        assert(min() >= 0);
+        Range tmp(sorted());
+        value_type res = 0;
+        std::make_unsigned_t<value_type> t = 1;
+        while (t < static_cast<std::make_unsigned_t<value_type>>(max())) {
+            ;
+            t <<= 1;
+        }
+        return res;
+    }
     constexpr Range reversed() const noexcept {
-        return {norm_stop - step, start - step, -step};
+        return {norm_stop - step, start - step, -step, start - step};
+    }
+    constexpr Range sorted() const noexcept {
+        if (step > 0) {
+            return {start, stop, step, stop};
+        } else {
+            return {norm_stop - step, start - step, -step, start - step};
+        }
     }
 
     static std::string type_str() {
