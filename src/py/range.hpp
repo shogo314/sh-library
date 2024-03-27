@@ -2,7 +2,6 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
-#include <tuple>
 #include <vector>
 
 struct Range {
@@ -170,11 +169,7 @@ struct Range {
     }
     constexpr size_type index(value_type x) const {
         assert(contains(x));
-        if (step > 0) {
-            return (x - start) / step;
-        } else {
-            return (start - x) / (-step);
-        }
+        return (x - start) / step;
     }
     constexpr const_iterator find(value_type x) const noexcept {
         if (contains(x)) {
@@ -221,8 +216,7 @@ struct Range {
         return start == norm_stop;
     }
     constexpr value_type sum() const noexcept {
-        value_type l = size();
-        return l * (norm_stop - step + start) / 2;
+        return size() * (norm_stop - step + start) / 2;
     }
     constexpr value_type min() const {
         assert(not empty());
@@ -243,11 +237,29 @@ struct Range {
     constexpr value_type product_xor() const noexcept {
         if (empty()) return 0;
         assert(min() >= 0);
-        Range tmp(sorted());
+        Range sorted_range(sorted());
         value_type res = 0;
         std::make_unsigned_t<value_type> t = 1;
-        while (t < static_cast<std::make_unsigned_t<value_type>>(max())) {
-            ;
+        while (t <= static_cast<std::make_unsigned_t<value_type>>(max())) {
+            std::make_unsigned_t<value_type> tmp = 0, n = size(), m = t, a = sorted_range.step, b = sorted_range.start;
+            while (true) {
+                if (a >= m) {
+                    tmp += n * (n - 1) / 2 * (a / m);
+                    a %= m;
+                }
+                if (b >= m) {
+                    tmp += n * (b / m);
+                    b %= m;
+                }
+                std::make_unsigned_t<value_type> y_max = a * n + b;
+                if (y_max < m) break;
+                n = y_max / m;
+                b = y_max % m;
+                std::swap(m, a);
+            }
+            if (tmp % 2 == 1) {
+                res += t;
+            }
             t <<= 1;
         }
         return res;
@@ -261,6 +273,10 @@ struct Range {
         } else {
             return {norm_stop - step, start - step, -step, start - step};
         }
+    }
+    constexpr Range slice(const Range& r) const {
+        if (r.empty()) return {};
+        
     }
 
     static std::string type_str() {
