@@ -48,7 +48,7 @@ struct Range {
     constexpr Range(value_type _stop)
         : start(0), stop(_stop), step(1), norm_stop(normalize(0, _stop, 1)) {}
     constexpr Range()
-        : start(0), stop(1), step(1), norm_stop(1) {
+        : start(0), stop(0), step(1), norm_stop(0) {
     }
     constexpr Range(const Range& o) = default;
     Range& operator=(const Range& o) = delete;
@@ -274,9 +274,51 @@ struct Range {
             return {norm_stop - step, start - step, -step, start - step};
         }
     }
+    constexpr Range clipped(value_type l, value_type r) const {
+        if (l > r) return {};
+        if (step > 0) {
+            value_type _start, _stop;
+            if (norm_stop <= l) {
+                _start = norm_stop;
+            } else if (l < start) {
+                _start = start;
+            } else {
+                _start = start + (l - start + step - 1) / step * step;
+            }
+            if (norm_stop <= r) {
+                _stop = norm_stop;
+            } else if (r < start) {
+                _stop = start;
+            } else {
+                _stop = start + (r - start + step) / step * step;
+            }
+            return {_start, _stop, step, _stop};
+        } else {
+            value_type _start, _stop;
+            if (start - step <= r) {
+                _start = start;
+            } else if (r < norm_stop - step) {
+                _start = norm_stop;
+            } else {
+                _start = norm_stop + (r - norm_stop) / -step * -step;
+            }
+            if (start - step <= l) {
+                _stop = start;
+            } else if (l < norm_stop - step) {
+                _stop = norm_stop;
+            } else {
+                _stop = norm_stop + (l - norm_stop - 1) / -step * -step;
+            }
+            return {_start, _stop, step, _stop};
+        }
+    }
     constexpr Range slice(const Range& r) const {
         if (r.empty()) return {};
-        
+        if (r.max() < 0) return {};
+        if (r.min() >= size()) return {};
+        if (r.step > 0) {
+            Range trimmed_range(r.clipped(0, size() - 1));
+        }
     }
 
     static std::string type_str() {
