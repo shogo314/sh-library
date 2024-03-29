@@ -30,7 +30,7 @@ struct Range {
             if (_start <= _stop) {
                 return _start;
             } else {
-                return _start - (_start - _stop - _step - 1) / (-_step) * (-_step);
+                return _start - (_start - _stop - _step - 1) / _step * _step;
             }
         }
     }
@@ -77,7 +77,7 @@ struct Range {
             : range(_range), value(_value) {}
         constexpr const_iterator(const const_iterator& o) noexcept
             : range(o.range), value(o.value) {}
-        constexpr const value_type& base() const noexcept {
+        constexpr reference base() const noexcept {
             return value;
         }
         constexpr const_iterator& operator=(const const_iterator& o) {
@@ -223,6 +223,9 @@ struct Range {
             return {*this, start + (x - start + step) / step * step};
         }
     }
+    /**
+     * @brief コンテナの要素数
+    */
     constexpr size_type size() const noexcept {
         if (step > 0) {
             return (norm_stop - start) / step;
