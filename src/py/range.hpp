@@ -40,6 +40,9 @@ struct Range {
     }
 
    public:
+    /**
+     * @brief step != 0
+     */
     constexpr Range(value_type _start, value_type _stop, value_type _step)
         : start(_start), stop(_stop), step(_step), norm_stop(normalize(_start, _stop, _step)) {
     }
@@ -148,6 +151,9 @@ struct Range {
     constexpr const_iterator end() const noexcept {
         return {*this, norm_stop};
     }
+    /**
+     * @brief x の個数 (0 か 1)
+     */
     constexpr difference_type count(value_type x) const noexcept {
         if (step > 0) {
             if (start <= x and x < stop) {
@@ -164,13 +170,24 @@ struct Range {
         }
         return 0;
     }
+    /**
+     * @brief x が含まれるか
+     */
     constexpr bool contains(value_type x) const noexcept {
         return count(x) != 0;
     }
+    /**
+     * @brief x のインデックス
+     * x が含まれないとエラー
+     */
     constexpr size_type index(value_type x) const {
         assert(contains(x));
         return (x - start) / step;
     }
+    /**
+     * @brief 要素が x のイテレータ
+     * x が含まれないと end() を返す
+     */
     constexpr const_iterator find(value_type x) const noexcept {
         if (contains(x)) {
             return {*this, x};
@@ -178,6 +195,10 @@ struct Range {
             return {*this, norm_stop};
         }
     }
+    /**
+     * @brief 要素が x 以上の最小のイテレータ
+     * step > 0 じゃないとエラー
+     */
     constexpr const_iterator lower_bound(value_type x) const {
         assert(step > 0);
         if (norm_stop <= x) {
@@ -188,6 +209,10 @@ struct Range {
             return {*this, start + (x - start + step - 1) / step * step};
         }
     }
+    /**
+     * @brief 要素が x より大きい最小のイテレータ
+     * step > 0 じゃないとエラー
+     */
     constexpr const_iterator upper_bound(value_type x) const {
         assert(step > 0);
         if (norm_stop <= x) {
@@ -218,6 +243,10 @@ struct Range {
     constexpr value_type sum() const noexcept {
         return size() * (norm_stop - step + start) / 2;
     }
+    /**
+     * @brief 最小値
+     * 空だとエラー
+     */
     constexpr value_type min() const {
         assert(not empty());
         if (step > 0) {
@@ -226,6 +255,10 @@ struct Range {
             return norm_stop - step;
         }
     }
+    /**
+     * @brief 最大値
+     * 空だとエラー
+     */
     constexpr value_type max() const {
         assert(not empty());
         if (step > 0) {
@@ -234,6 +267,10 @@ struct Range {
             return start;
         }
     }
+    /**
+     * @brief 総 xor
+     * 負を含むとエラー
+     */
     constexpr value_type product_xor() const noexcept {
         if (empty()) return 0;
         assert(min() >= 0);
@@ -264,16 +301,25 @@ struct Range {
         }
         return res;
     }
+    /**
+     * @brief 逆順にしたもの
+     */
     constexpr Range reversed() const noexcept {
         return {norm_stop - step, start - step, -step, start - step};
     }
+    /**
+     * @brief step > 0 だとそのまま step < 0 だと逆順にしたもの
+     */
     constexpr Range sorted() const noexcept {
         if (step > 0) {
-            return {start, stop, step, stop};
+            return {start, norm_stop, step, norm_stop};
         } else {
             return {norm_stop - step, start - step, -step, start - step};
         }
     }
+    /**
+     * @brief 要素が [l,r] である範囲を返す
+     */
     constexpr Range clipped(value_type l, value_type r) const {
         if (l > r) return {};
         if (step > 0) {
@@ -300,25 +346,32 @@ struct Range {
             } else if (r < norm_stop - step) {
                 _start = norm_stop;
             } else {
-                _start = norm_stop + (r - norm_stop) / -step * -step;
+                _start = norm_stop + (r - norm_stop) / step * step;
             }
             if (start - step <= l) {
                 _stop = start;
             } else if (l < norm_stop - step) {
                 _stop = norm_stop;
             } else {
-                _stop = norm_stop + (l - norm_stop - 1) / -step * -step;
+                _stop = norm_stop + (l - norm_stop - 1) / step * step;
             }
             return {_start, _stop, step, _stop};
         }
     }
+    /**
+     * @brief 要素を Range で指定したコンテナ
+     */
     constexpr Range slice(const Range& r) const {
         if (r.empty()) return {};
         if (r.max() < 0) return {};
         if (r.min() >= size()) return {};
-        if (r.step > 0) {
-            Range trimmed_range(r.clipped(0, size() - 1));
-        }
+        Range trimmed_range(r.clipped(0, size() - 1));
+        if (trimmed_range.empty()) return {};
+        value_type _start, _stop, _step;
+        _step = step * trimmed_range.step;
+        _start = at(trimmed_range.start);
+        _stop = _start + _step * trimmed_range.size();
+        return {_start, _stop, _step, _stop};
     }
 
     static std::string type_str() {
