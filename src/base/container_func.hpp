@@ -21,9 +21,8 @@
     }                                                                             \
     template <typename T, typename U, ENABLE_IF_T(not has_##func_name##_v<T, U>)> \
     inline constexpr auto func_name(const T &t, const U &u)                       \
-        -> decltype(func_name(t.begin(), t.end(), u)) {                           \
-        using namespace std;                                                      \
-        return func_name(t.begin(), t.end(), u);                                  \
+        -> decltype(std::func_name(t.begin(), t.end(), u)) {                      \
+        return std::func_name(t.begin(), t.end(), u);                             \
     }
 
 METHOD_EXPAND(reversed)
@@ -148,6 +147,11 @@ METHOD_AND_FUNC_ARG_EXPAND(find)
 METHOD_AND_FUNC_ARG_EXPAND(lower_bound)
 METHOD_AND_FUNC_ARG_EXPAND(upper_bound)
 
+template <class C, typename T>
+inline constexpr bool contains(const C &c, const T &t) {
+    return find(c, t) != c.end();
+}
+
 template <class C>
 inline constexpr mem_value_type<C> gcd(const C &v) {
     mem_value_type<C> init(0);
@@ -178,8 +182,18 @@ inline constexpr mem_value_type<C> median(const C &v) {
 }
 
 template <class C, typename U>
-inline constexpr size_t index(const C &v, const U &x) {
-    return std::distance(v.begin(), std::find(v.begin(), v.end(), x));
+inline constexpr std::ptrdiff_t index(const C &v, const U &x) {
+    return std::distance(v.begin(), find(v, x));
+}
+
+template <class C, typename U>
+inline constexpr std::ptrdiff_t lower_bound_index(const C &v, const U &x) {
+    return std::distance(v.begin(), lower_bound(v, x));
+}
+
+template <class C, typename U>
+inline constexpr std::ptrdiff_t upper_bound_index(const C &v, const U &x) {
+    return std::distance(v.begin(), upper_bound(v, x));
 }
 
 template <class C, ENABLE_IF_T(std::is_integral_v<mem_value_type<C>>)>
