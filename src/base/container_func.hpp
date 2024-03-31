@@ -186,16 +186,6 @@ inline constexpr std::ptrdiff_t index(const C &v, const U &x) {
     return std::distance(v.begin(), find(v, x));
 }
 
-template <class C, typename U>
-inline constexpr std::ptrdiff_t lower_bound_index(const C &v, const U &x) {
-    return std::distance(v.begin(), lower_bound(v, x));
-}
-
-template <class C, typename U>
-inline constexpr std::ptrdiff_t upper_bound_index(const C &v, const U &x) {
-    return std::distance(v.begin(), upper_bound(v, x));
-}
-
 template <class C, ENABLE_IF_T(std::is_integral_v<mem_value_type<C>>)>
 inline constexpr mem_value_type<C> mex(const C &v) {
     std::vector<bool> b(v.size() + 1);
