@@ -130,13 +130,12 @@ inline constexpr mem_value_type<C> maximum_subarray(const C &v) {
     }
     return res;
 }
-template <class C, ENABLE_IF_T(std::is_scalar_v<mem_value_type<C>>)>
-inline constexpr mem_value_type<C> maximum_subarray0(const C &v) {
-    mem_value_type<C> res = 0;
-    mem_value_type<C> tmp = 0;
+template <class C>
+inline constexpr mem_value_type<C> maximum_subarray(const C &v, mem_value_type<C> init) {
+    mem_value_type<C> res = init, tmp = init;
     for (const auto &a : v) {
         tmp += a;
-        if (tmp < 0) tmp = 0;
+        if (tmp < init) tmp = init;
         if (res < tmp) res = tmp;
     }
     return res;
