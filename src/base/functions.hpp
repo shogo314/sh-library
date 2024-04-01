@@ -51,6 +51,7 @@ constexpr T extgcd(const T &a, const T &b, T &x, T &y) {
 template <typename M, typename N, class F, ENABLE_IF_T(std::is_integral_v<std::common_type_t<M, N>> and std::is_invocable_r_v<bool, F, std::common_type_t<M, N>>)>
 inline constexpr std::common_type_t<M, N> binary_search(const M &ok, const N &ng, F f) {
     std::common_type_t<M, N> _ok = ok, _ng = ng;
+    assert(f(_ok));
     while (std::abs(_ok - _ng) > 1) {
         std::common_type_t<M, N> mid = (_ok + _ng) / 2;
         if (f(mid)) {
