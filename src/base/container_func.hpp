@@ -5,7 +5,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <numeric>
-
 #include "traits.hpp"
 
 #define METHOD_EXPAND(func_name)                                             \
