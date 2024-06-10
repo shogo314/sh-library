@@ -28,7 +28,7 @@ struct IntervalSet {
    private:
     std::set<value_type, value_compare> data;
     using iterator = typename decltype(data)::iterator;
-    std::optional<std::pair<iterator, iterator>> find(key_type l, key_type r) {
+    std::optional<std::pair<iterator, iterator>> find(key_type l, key_type r) const {
         auto itr_l = data.upper_bound({l, l});
         if (itr_l == data.begin()) {
         } else {
@@ -47,7 +47,10 @@ struct IntervalSet {
 
    public:
     IntervalSet() = default;
-    std::optional<value_type> find(key_type k) const {
+    /**
+     * @brief k が含まれている区間
+     */
+    std::optional<value_type> covered_by(key_type k) const {
         auto itr = data.upper_bound({k, k});
         if (itr == data.begin()) return {};
         --itr;
@@ -55,6 +58,22 @@ struct IntervalSet {
             return *itr;
         }
         return {};
+    }
+    /**
+     * @brief [l,r) が完全に含まれている区間
+     */
+    std::optional<value_type> covered_by(key_type l, key_type r) const {
+        auto opt = find(l, r);
+        if (not opt.has_value()) {
+            return {};
+        }
+        std::pair<iterator, iterator> p = opt.value();
+        if (p.first != std::prev(p.second)) {
+            return {};
+        }
+        if (key_comp(l, p.first->first)) return {};
+        if (key_comp(p.first->second, r)) return {};
+        return value_type(p.first->first, p.first->second);
     }
     void insert(key_type l, key_type r) {
         assert(key_comp(l, r));
@@ -84,6 +103,9 @@ struct IntervalSet {
             data.insert(tmp.back());
             tmp.pop_back();
         }
+    }
+    std::size_t size() const {
+        return data.size();
     }
     std::vector<value_type> to_vector() const {
         return std::vector<value_type>(data.begin(), data.end());
