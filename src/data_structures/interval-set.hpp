@@ -10,71 +10,75 @@
 #include <vector>
 /**
  * @brief 半開区間を管理する
- *
  * @tparam T スカラー
  */
-template <typename T = long long, std::enable_if_t<std::is_scalar_v<T>>* = nullptr>
-class IntervalSet {
+template <typename T = long long, class Compare = std::less<T>, std::enable_if_t<std::is_scalar_v<T>>* = nullptr>
+struct IntervalSet {
    public:
     using key_type = T;
     using value_type = std::pair<key_type, key_type>;
-    inline constexpr static key_type max = std::numeric_limits<key_type>::max();
-    inline constexpr static key_type min = std::numeric_limits<key_type>::min();
+    inline constexpr static auto key_comp = Compare();
+    struct value_compare {
+        bool operator()(const value_type& a, const value_type& b) const {
+            return key_comp(a.first, b.first) or (not key_comp(b.first, a.first) and key_comp(b.second, a.second));
+        }
+    };
+    inline constexpr static auto value_comp = value_compare();
 
    private:
-    std::set<value_type> data;
-    using iterator = typename std::set<value_type>::iterator;
+    std::set<value_type, value_compare> data;
+    using iterator = typename decltype(data)::iterator;
     std::optional<std::pair<iterator, iterator>> find(key_type l, key_type r) {
-        auto itr_l = data.upper_bound({l, max});
+        auto itr_l = data.upper_bound({l, l});
         if (itr_l == data.begin()) {
         } else {
-            if (std::prev(itr_l)->second < l) {
+            if (key_comp(std::prev(itr_l)->second, l)) {
             } else {
                 --itr_l;
             }
         }
-        if (itr_l == data.end() or r < itr_l->first) {
+        if (itr_l == data.end() or key_comp(r, itr_l->first)) {
             return {};
         }
-        if (itr_l->first < l) l = itr_l->first;
-        auto itr_r = data.upper_bound({r, max});
+        if (key_comp(itr_l->first, l)) l = itr_l->first;
+        auto itr_r = data.upper_bound({r, r});
         return std::pair<iterator, iterator>{itr_l, itr_r};
     }
 
    public:
     IntervalSet() = default;
     std::optional<value_type> find(key_type k) const {
-        auto itr = data.upper_bound({k, max});
+        auto itr = data.upper_bound({k, k});
         if (itr == data.begin()) return {};
         --itr;
-        if (k < itr->second) {
+        if (key_comp(k, itr->second)) {
             return *itr;
         }
         return {};
     }
     void insert(key_type l, key_type r) {
-        assert(l < r);
+        assert(key_comp(l, r));
         auto opt = find(l, r);
         if (not opt.has_value()) {
             data.emplace(l, r);
             return;
         }
         auto [itr_l, itr_r] = opt.value();
-        if (itr_l->first < l) l = itr_l->first;
-        if (r < std::prev(itr_r)->second) r = std::prev(itr_r)->second;
+        if (key_comp(itr_l->first, l)) l = itr_l->first;
+        if (key_comp(r, std::prev(itr_r)->second)) r = std::prev(itr_r)->second;
         data.erase(itr_l, itr_r);
         data.emplace(l, r);
     };
     void erase(key_type l, key_type r) {
-        assert(l < r);
+        assert(key_comp(l, r));
         auto opt = find(l, r);
         if (not opt.has_value()) {
             return;
         }
         auto [itr_l, itr_r] = opt.value();
         std::vector<value_type> tmp;
-        if (itr_l->first < l) tmp.push_back({itr_l->first, l});
-        if (r < std::prev(itr_r)->second) tmp.push_back({r, std::prev(itr_r)->second});
+        if (key_comp(itr_l->first, l)) tmp.push_back({itr_l->first, l});
+        if (key_comp(r, std::prev(itr_r)->second)) tmp.push_back({r, std::prev(itr_r)->second});
         data.erase(itr_l, itr_r);
         while (not tmp.empty()) {
             data.insert(tmp.back());
