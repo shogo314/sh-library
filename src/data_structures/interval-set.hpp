@@ -32,8 +32,7 @@ struct IntervalSet {
         auto itr_l = data.upper_bound({l, l});
         if (itr_l == data.begin()) {
         } else {
-            if (key_comp(std::prev(itr_l)->second, l)) {
-            } else {
+            if (not key_comp(std::prev(itr_l)->second, l)) {
                 --itr_l;
             }
         }
