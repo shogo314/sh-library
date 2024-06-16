@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
-
 #include "traits.hpp"
 
 template <typename T1, typename T2>
