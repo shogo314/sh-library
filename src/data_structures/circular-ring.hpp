@@ -2,6 +2,10 @@
 #include <cassert>
 #include <vector>
 
+/**
+ * @brief 円環
+ * @tparam T 
+ */
 template <typename T>
 struct CircularRing {
     std::vector<T> data;
